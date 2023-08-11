@@ -1,0 +1,100 @@
+# Importing necessary modules
+import pandas as pd
+import numpy as np
+import plotly.express as px
+import matplotlib.pyplot as plt
+
+# Loading dataset from URL
+dataset_url = 'https://raw.githubusercontent.com/datasets/covid-19/master/data/countries-aggregated.csv'
+df = pd.read_csv(dataset_url)
+
+# Displaying the first few rows of the dataset
+print(df.head())
+
+# Displaying the last few rows of the dataset
+print(df.tail())
+
+# Displaying the shape of the dataset (rows, columns)
+print(df.shape)
+
+# Preprocessing: Filtering out rows where Confirmed cases are greater than 0
+df = df[df.Confirmed > 0]
+
+# Displaying the first few rows of the preprocessed dataset
+print(df.head())
+
+# Selecting data for a specific country (India)
+india_data = df[df.Country == 'India']
+
+# Visualization 1: Choropleth map showing global spread of Covid-19 cases over time
+fig = px.choropleth(df, locations='Country', locationmode='country names', color='Confirmed', animation_frame='Date')
+fig.update_layout(title_text='Global spread of Covid-19')
+fig.show()
+
+# Visualization 2: Choropleth map showing global death cases of Covid-19 over time
+fig = px.choropleth(df, locations='Country', locationmode='country names', color='Deaths', animation_frame='Date')
+fig.update_layout(title_text='Global death cases of Covid-19')
+fig.show()
+
+# Infection Rate calculation for India
+india_data['Infection Rate'] = india_data['Confirmed'].diff()
+
+# Visualization 3: Line plot showing Confirmed cases and Infection Rate over time for India
+fig1 = px.line(india_data, x='Date', y=['Confirmed', 'Infection Rate'])
+fig1.show()
+
+# Maximum Infection Rate calculation for all countries
+countries = list(df['Country'].unique())
+max_infection_rates = []
+for c in countries:
+    MIR = df[df.Country == c].Confirmed.diff().max()
+    max_infection_rates.append(MIR)
+
+df_MIR = pd.DataFrame()
+df_MIR['Country'] = countries
+df_MIR['Max Infection Rates'] = max_infection_rates
+
+# Visualization 4: Bar chart showing global maximum infection rates by country
+fig2 = px.bar(df_MIR, x='Country', y='Max Infection Rates', color='Country', title='Global Max Infection Rate', log_y=True)
+fig2.show()
+
+# Dates for COVID-19 lockdown in India
+India_lockdown_start_date = '2020-03-25'
+India_lockdown_a_month_later = '2020-04-25'
+
+# Visualization 5: Line plot showing Infection Rate before and after lockdown in India
+fig3 = px.line(india_data, x='Date', y='Infection Rate', title='Before and after lockdown in India')
+
+# Adding vertical lines to indicate lockdown start and end dates
+fig3.add_shape(dict(type="line", x0=India_lockdown_start_date, y0=0, x1=India_lockdown_start_date,
+                    y1=india_data['Infection Rate'].max(), line=dict(color='red', width=2)))
+
+fig3.add_annotation(dict(x=India_lockdown_start_date, y=india_data['Infection Rate'].max(), text='Lockdown start date'))
+
+fig3.add_shape(dict(type='line', x0=India_lockdown_a_month_later, y0=0, x1=India_lockdown_a_month_later,
+                    y1=india_data['Infection Rate'].max(), line=dict(color='red', width=2)))
+
+fig3.add_annotation(dict(x=India_lockdown_a_month_later, y=india_data['Infection Rate'].max(), text='Lockdown end date'))
+
+# Lockdown impact on Death Rate calculation for India
+india_data['Death Rate'] = india_data.Deaths.diff()
+
+# Normalizing Infection Rate and Death Rate for visualization
+india_data['Infection Rate'] = india_data['Infection Rate'] / india_data['Infection Rate'].max()
+india_data['Death Rate'] = india_data['Death Rate'] / india_data['Death Rate'].max()
+
+# Visualization 6: Line plot showing normalized Infection Rate and Death Rate over time for India
+fig4 = px.line(india_data, x='Date', y=['Infection Rate', 'Death Rate'])
+
+# Adding vertical lines to indicate lockdown start and end dates
+fig4.add_shape(dict(type="line", x0=India_lockdown_start_date, y0=0, x1=India_lockdown_start_date,
+                    y1=india_data['Infection Rate'].max(), line=dict(color='red', width=2)))
+
+fig4.add_annotation(dict(x=India_lockdown_start_date, y=india_data['Infection Rate'].max(), text='Lockdown start date'))
+
+fig4.add_shape(dict(type='line', x0=India_lockdown_a_month_later, y0=0, x1=India_lockdown_a_month_later,
+                    y1=india_data['Infection Rate'].max(), line=dict(color='red', width=2)))
+
+fig4.add_annotation(dict(x=India_lockdown_a_month_later, y=1, text='Lockdown end date'))
+
+fig4.show()
