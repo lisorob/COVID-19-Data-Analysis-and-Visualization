@@ -28,7 +28,7 @@ pip install pandas numpy plotly matplotlib
 Usage
 
 Clone this repository to your local machine:
-git clone https://github.com/lisorob/covid-19-analysis.git
+git clone https://github.com/lisorob/COVID-19-Data-Analysis-and-Visualization/blob/main/covid-19-analysis
 
 Navigate to the repository directory:
 cd covid-19-analysis
